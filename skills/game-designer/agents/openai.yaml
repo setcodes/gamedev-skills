@@ -1,0 +1,4 @@
+interface:
+  display_name: "Game Designer"
+  short_description: "Game systems, documents, playtests, and course feedback"
+  default_prompt: "Use $game-designer to design or review this game feature or artifact, with concrete rules and a suitable way to test it."

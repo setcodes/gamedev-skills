@@ -1,0 +1,4 @@
+interface:
+  display_name: "Godot Gamedev"
+  short_description: "Godot gameplay implementation, debugging, and review"
+  default_prompt: "Use $godot-gamedev to implement or review this Godot gameplay task using the project's engine version and relevant behavior checks."
