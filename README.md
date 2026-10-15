@@ -17,7 +17,34 @@ A growing collection of focused skills. The current set covers engine-neutral ga
 | [game-designer](skills/game-designer/SKILL.md) | Concepts, Vision, GDD, mechanics, progression, economies, levels, encounters, playtest plans, and teaching feedback. Engine-neutral. |
 | [godot-gamedev](skills/godot-gamedev/SKILL.md) | Gameplay implementation, debugging, and review in Godot, with project-version awareness, scene/resource handling, and meaningful verification. |
 
-The instructions and UI metadata are prepared for Codex. Other agents may be able to read the Markdown instructions, but their discovery and installation formats can differ; compatibility with other agents has not been tested. No external plugin or MCP server is required. Running gameplay checks requires the project's engine and relevant tools.
+The same Agent Skills files support Codex and Claude. `agents/openai.yaml` supplies optional Codex UI metadata; Claude reads `SKILL.md` and the supporting files. No external plugin dependency or MCP server is required. Running gameplay checks requires the project's engine and relevant tools.
+
+## Install in Claude Code
+
+Run these commands in your terminal:
+
+```sh
+claude plugin marketplace add setcodes/gamedev-skills
+claude plugin install gamedev-skills@setcode-gamedev-skills
+```
+
+Start a new Claude Code session and invoke `/gamedev-skills:game-designer` or `/gamedev-skills:godot-gamedev`. The plugin includes every skill in this repository's `skills/` directory.
+
+For an individual skill without the plugin, copy its complete folder from `skills/` into `~/.claude/skills/` for personal use, or `.claude/skills/` inside your game project for that project. Invoke it with `/game-designer` or `/godot-gamedev`. Back up existing folders before replacing them.
+
+See the official [Claude Code skills guide](https://code.claude.com/docs/en/skills) and [marketplace guide](https://code.claude.com/docs/en/plugin-marketplaces).
+
+## Install in Claude (claude.ai)
+
+Build one ZIP per skill from this checkout with Python 3.9 or newer:
+
+```sh
+python3 scripts/package_skills.py
+```
+
+In Claude, open **Customize → Skills → + → Create skill → Upload a skill**, upload `dist/game-designer.zip` or `dist/godot-gamedev.zip`, and enable it. Upload the skills separately, using these archives rather than GitHub's ZIP of the whole repository. See [Claude's upload instructions](https://support.claude.com/en/articles/12512180-use-skills-in-claude) for account capabilities and current UI.
+
+The website runs in Claude's environment, so it can review supplied project files and plan checks but cannot directly run the Godot installation on your computer. Use Claude Code in the local game project for local runtime verification. Uploading and running the skills in claude.ai has not been tested in an authenticated account.
 
 ## Install in Codex
 
@@ -75,7 +102,7 @@ Place it in `skills/<skill-name>/` with a clear `SKILL.md`, MIT license notice, 
 
 An engine or tool skill should use that project's version and conventions. General design guidance belongs in an engine-neutral skill. Skills should work independently; document any actual dependency rather than assuming another skill is installed.
 
-Add the skill to the table above. Before proposing a change, check its metadata and relative links, try representative requests, and state any verification limits. Feedback and contributions are welcome through GitHub issues and pull requests.
+Add the skill to the table above. The Claude Code plugin discovers the shared `skills/` directory, and `scripts/package_skills.py` builds each skill separately for upload. Before proposing a change, check its metadata and relative links, try representative requests, and state any verification limits. Feedback and contributions are welcome through GitHub issues and pull requests.
 
 ## На русском
 
@@ -83,6 +110,23 @@ Add the skill to the table above. Before proposing a change, check its metadata 
 
 - **game-designer** — концепты, Vision, GDD, механики, прогрессия, экономика, уровни, плейтесты и обратная связь ученикам. Не привязан к движку.
 - **godot-gamedev** — реализация, отладка и ревью игровых систем в Godot с учётом версии движка и проверкой поведения.
+
+### Claude Code
+
+Выполни в терминале:
+
+```sh
+claude plugin marketplace add setcodes/gamedev-skills
+claude plugin install gamedev-skills@setcode-gamedev-skills
+```
+
+Начни новую сессию Claude Code. Команды: `/gamedev-skills:game-designer` и `/gamedev-skills:godot-gamedev`. Чтобы установить один скилл вручную, скопируй его папку из `skills/` в `~/.claude/skills/` или в `.claude/skills/` проекта; тогда команды будут `/game-designer` и `/godot-gamedev`.
+
+### Claude в браузере
+
+В скачанном репозитории выполни `python3 scripts/package_skills.py` (Python 3.9+). Через **Customize → Skills → + → Create skill → Upload a skill** загрузи нужный ZIP из `dist/` и включи скилл. Для каждого скилла нужен отдельный архив. Проверка загрузки в авторизованном аккаунте claude.ai не выполнялась.
+
+### Codex
 
 Для установки попроси Codex:
 
@@ -107,6 +151,6 @@ Add the skill to the table above. Before proposing a change, check its metadata 
 перезапуска сцены. Сохрани архитектуру проекта и проверь сценарий.
 ```
 
-Инструкции написаны по-английски, ответы должны быть на языке пользователя. Плагины и MCP-серверы не требуются. Для проверки игры нужны соответствующие движок, проект и инструменты; без них выводы ограничиваются доступной проверкой. Поддержка других AI-агентов отдельно не тестировалась.
+Инструкции написаны по-английски, ответы должны быть на языке пользователя. Дополнительные плагины и MCP-серверы не требуются. Для проверки игры нужны соответствующие движок, проект и инструменты; без них выводы ограничиваются доступной проверкой. Веб-версия Claude не запускает движок на твоём компьютере; для этого используй Claude Code в локальном проекте.
 
 Можно использовать, изменять и распространять набор по лицензии [MIT](LICENSE), сохраняя уведомление об авторстве и текст лицензии.

@@ -1,0 +1,14 @@
+{
+  "name": "setcode-gamedev-skills",
+  "description": "Game design and development skills by Setcode, across engines and tools.",
+  "owner": {
+    "name": "Egor Maximov"
+  },
+  "plugins": [
+    {
+      "name": "gamedev-skills",
+      "source": "./",
+      "description": "Game design and development skills across engines and tools. By Setcode."
+    }
+  ]
+}

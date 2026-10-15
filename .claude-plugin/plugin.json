@@ -1,0 +1,13 @@
+{
+  "name": "gamedev-skills",
+  "version": "1.0.0",
+  "description": "Game design and development skills across engines and tools. By Setcode.",
+  "author": {
+    "name": "Egor Maximov",
+    "url": "https://setcode.ru"
+  },
+  "homepage": "https://github.com/setcodes/gamedev-skills#readme",
+  "repository": "https://github.com/setcodes/gamedev-skills",
+  "license": "MIT",
+  "keywords": ["gamedev", "game-design", "skills", "godot"]
+}
