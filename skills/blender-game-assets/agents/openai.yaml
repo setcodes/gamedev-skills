@@ -1,0 +1,4 @@
+interface:
+  display_name: "Blender Game Assets"
+  short_description: "Meshy or reference image to game-ready low-poly in live Blender"
+  default_prompt: "Use $blender-game-assets to turn this Meshy model or reference image into a game-ready low-poly asset in the running Blender, with baked textures, a comparison render, and a GLB export."

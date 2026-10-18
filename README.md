@@ -2,7 +2,7 @@
 
 Reusable AI agent skills for game design and development across engines and tools. By [Setcode](https://setcode.ru).
 
-A growing collection of focused skills. The current set covers engine-neutral game design and Godot gameplay engineering; future skills can target other engines and production tools. Each skill is independent and includes its own instructions, references, and MIT license.
+A growing collection of focused skills. The current set covers engine-neutral game design, Godot gameplay engineering, and game-ready 3D assets in Blender; future skills can target other engines and production tools. Each skill is independent and includes its own instructions, references, and MIT license.
 
 **Author:** Egor Maximov · [setcode.ru](https://setcode.ru)
 
@@ -16,8 +16,9 @@ A growing collection of focused skills. The current set covers engine-neutral ga
 | --- | --- |
 | [game-designer](skills/game-designer/SKILL.md) | Concepts, Vision, GDD, mechanics, progression, economies, levels, encounters, playtest plans, and teaching feedback. Engine-neutral. |
 | [godot-gamedev](skills/godot-gamedev/SKILL.md) | Gameplay implementation, debugging, and review in Godot, with project-version awareness, scene/resource handling, and meaningful verification. |
+| [blender-game-assets](skills/blender-game-assets/SKILL.md) | Meshy/AI models or reference images to game-ready low-poly in a live Blender: rebuild + bake, character reduction, Mixamo prep and weight fixes, GLB export. Requires Blender 5.1+ with the Blender Lab MCP add-on. |
 
-The same Agent Skills files support Codex and Claude. `agents/openai.yaml` supplies optional Codex UI metadata; Claude reads `SKILL.md` and the supporting files. No external plugin dependency or MCP server is required. Running gameplay checks requires the project's engine and relevant tools.
+The same Agent Skills files support Codex and Claude. `agents/openai.yaml` supplies optional Codex UI metadata; Claude reads `SKILL.md` and the supporting files. game-designer and godot-gamedev need no plugin or MCP server; blender-game-assets drives a running Blender through the Blender Lab MCP add-on and bundles the stdio bridge plus setup steps for Claude Code and Codex (`references/connection.md`). Running gameplay checks requires the project's engine and relevant tools.
 
 ## Install in Claude Code
 
@@ -28,7 +29,7 @@ claude plugin marketplace add setcodes/gamedev-skills
 claude plugin install gamedev-skills@setcode-gamedev-skills
 ```
 
-Start a new Claude Code session and invoke `/gamedev-skills:game-designer` or `/gamedev-skills:godot-gamedev`. The plugin includes every skill in this repository's `skills/` directory.
+Start a new Claude Code session and invoke `/gamedev-skills:game-designer`, `/gamedev-skills:godot-gamedev`, or `/gamedev-skills:blender-game-assets`. The plugin includes every skill in this repository's `skills/` directory.
 
 For an individual skill without the plugin, copy its complete folder from `skills/` into `~/.claude/skills/` for personal use, or `.claude/skills/` inside your game project for that project. Invoke it with `/game-designer` or `/godot-gamedev`. Back up existing folders before replacing them.
 
@@ -42,7 +43,7 @@ Build one ZIP per skill from this checkout with Python 3.9 or newer:
 python3 scripts/package_skills.py
 ```
 
-In Claude, open **Customize → Skills → + → Create skill → Upload a skill**, upload `dist/game-designer.zip` or `dist/godot-gamedev.zip`, and enable it. Upload the skills separately, using these archives rather than GitHub's ZIP of the whole repository. See [Claude's upload instructions](https://support.claude.com/en/articles/12512180-use-skills-in-claude) for account capabilities and current UI.
+In Claude, open **Customize → Skills → + → Create skill → Upload a skill**, upload `dist/game-designer.zip`, `dist/godot-gamedev.zip`, or `dist/blender-game-assets.zip`, and enable it. Upload the skills separately, using these archives rather than GitHub's ZIP of the whole repository. See [Claude's upload instructions](https://support.claude.com/en/articles/12512180-use-skills-in-claude) for account capabilities and current UI.
 
 The website runs in Claude's environment, so it can review supplied project files and plan checks but cannot directly run the Godot installation on your computer. Use Claude Code in the local game project for local runtime verification. Uploading and running the skills in claude.ai has not been tested in an authenticated account.
 
@@ -52,13 +53,14 @@ Ask Codex:
 
 ```text
 Use $skill-installer to install these skills from setcodes/gamedev-skills:
-skills/game-designer and skills/godot-gamedev.
+skills/game-designer, skills/godot-gamedev and skills/blender-game-assets.
 ```
 
 You can install either skill separately. Direct skill links:
 
 - [game-designer](https://github.com/setcodes/gamedev-skills/tree/main/skills/game-designer)
 - [godot-gamedev](https://github.com/setcodes/gamedev-skills/tree/main/skills/godot-gamedev)
+- [blender-game-assets](https://github.com/setcodes/gamedev-skills/tree/main/skills/blender-game-assets)
 
 For manual installation, download or clone this repository and copy the desired folder from `skills/` into your Codex skills directory: `$CODEX_HOME/skills`, or `~/.codex/skills` if `CODEX_HOME` is unset. Copy the entire skill folder, including `agents/`, `references/`, and `LICENSE`; do not copy the repository as an extra nesting level. Back up an existing folder before replacing it.
 
@@ -76,7 +78,7 @@ For manual installation, download or clone this repository and copy the desired 
     references/
 ```
 
-Installed skills are available on the next turn. Explicitly invoke a skill with `$game-designer` or `$godot-gamedev`, or let Codex select it for a relevant task.
+Installed skills are available on the next turn. Explicitly invoke a skill with `$game-designer`, `$godot-gamedev`, or `$blender-game-assets`, or let Codex select it for a relevant task.
 
 ## Example prompts
 
@@ -92,6 +94,9 @@ against the supplied assignment and rubric. Do not rewrite the submission.
 
 Use $godot-gamedev to fix repeated damage after a scene restart.
 Preserve the existing architecture and verify the affected behavior.
+
+Use $blender-game-assets to turn the Meshy house in meshy_raw/Red_Roof
+into a game-ready low-poly with baked textures and a comparison render.
 ```
 
 Skills should answer in the user's language. Keep project-specific paths, approved decisions, the current milestone, and the source of truth in project instructions and documents. A skill does not supply evidence that a game is fun, balanced, or working without the relevant observation or test.
@@ -106,10 +111,11 @@ Add the skill to the table above. The Claude Code plugin discovers the shared `s
 
 ## На русском
 
-Набор скиллов для геймдизайна и разработки игр от **Егора Максимова · [Setcode](https://setcode.ru)**. Коллекция открыта для других движков и инструментов; сейчас доступны два независимых навыка:
+Набор скиллов для геймдизайна и разработки игр от **Егора Максимова · [Setcode](https://setcode.ru)**. Коллекция открыта для других движков и инструментов; сейчас доступны три независимых навыка:
 
 - **game-designer** — концепты, Vision, GDD, механики, прогрессия, экономика, уровни, плейтесты и обратная связь ученикам. Не привязан к движку.
 - **godot-gamedev** — реализация, отладка и ревью игровых систем в Godot с учётом версии движка и проверкой поведения.
+- **blender-game-assets** — модели из Meshy или по картинке-референсу в оптимизированные игровые ассеты в запущенном Blender: пересборка low-poly и запекание текстур, сокращение персонажей, подготовка к Mixamo и исправление весов, экспорт GLB. Нужен Blender 5.1+ с MCP-аддоном Blender Lab.
 
 ### Claude Code
 
@@ -120,7 +126,7 @@ claude plugin marketplace add setcodes/gamedev-skills
 claude plugin install gamedev-skills@setcode-gamedev-skills
 ```
 
-Начни новую сессию Claude Code. Команды: `/gamedev-skills:game-designer` и `/gamedev-skills:godot-gamedev`. Чтобы установить один скилл вручную, скопируй его папку из `skills/` в `~/.claude/skills/` или в `.claude/skills/` проекта; тогда команды будут `/game-designer` и `/godot-gamedev`.
+Начни новую сессию Claude Code. Команды: `/gamedev-skills:game-designer`, `/gamedev-skills:godot-gamedev` и `/gamedev-skills:blender-game-assets`. Чтобы установить один скилл вручную, скопируй его папку из `skills/` в `~/.claude/skills/` или в `.claude/skills/` проекта; тогда команды будут `/game-designer` и `/godot-gamedev`.
 
 ### Claude в браузере
 
@@ -132,7 +138,7 @@ claude plugin install gamedev-skills@setcode-gamedev-skills
 
 ```text
 Используй $skill-installer. Установи из репозитория setcodes/gamedev-skills
-скиллы skills/game-designer и skills/godot-gamedev.
+скиллы skills/game-designer, skills/godot-gamedev и skills/blender-game-assets.
 ```
 
 Можно установить только один навык. При ручной установке скопируй нужную папку из `skills/` целиком в `$CODEX_HOME/skills` или, если переменная не задана, в `~/.codex/skills`. Перед заменой существующего скилла сохрани его копию. Установленные скиллы доступны со следующего хода.
@@ -149,8 +155,11 @@ claude plugin install gamedev-skills@setcode-gamedev-skills
 
 Используй $godot-gamedev. Исправь повторное нанесение урона после
 перезапуска сцены. Сохрани архитектуру проекта и проверь сценарий.
+
+Используй $blender-game-assets. Сделай из дома Meshy в meshy_raw/Red_Roof
+оптимизированную модель с запечёнными текстурами и сравнением с оригиналом.
 ```
 
-Инструкции написаны по-английски, ответы должны быть на языке пользователя. Дополнительные плагины и MCP-серверы не требуются. Для проверки игры нужны соответствующие движок, проект и инструменты; без них выводы ограничиваются доступной проверкой. Веб-версия Claude не запускает движок на твоём компьютере; для этого используй Claude Code в локальном проекте.
+Инструкции написаны по-английски, ответы должны быть на языке пользователя. Для game-designer и godot-gamedev дополнительные плагины и MCP-серверы не требуются; blender-game-assets работает с запущенным Blender через MCP-аддон Blender Lab, мост и инструкция по подключению к Claude Code и Codex входят в скилл. Для проверки игры нужны соответствующие движок, проект и инструменты; без них выводы ограничиваются доступной проверкой. Веб-версия Claude не запускает движок на твоём компьютере; для этого используй Claude Code в локальном проекте.
 
 Можно использовать, изменять и распространять набор по лицензии [MIT](LICENSE), сохраняя уведомление об авторстве и текст лицензии.
