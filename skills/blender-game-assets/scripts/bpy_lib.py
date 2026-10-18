@@ -465,30 +465,42 @@ def bake_maps(hp, lp, out_dir, name, res=2048, cage=0.03, max_ray=0.1, margin=16
         bpy.ops.object.bake(type=typ, **common, **kw)
         times[key] = round(time.time() - t, 1)
 
-    bake("albedo", 'DIFFUSE', 4, pass_filter={'COLOR'})
-    bake("normal", 'NORMAL', 4, normal_space='TANGENT')
-    bake("rough", 'ROUGHNESS', 4)
-    bake("ao", 'AO', ao_samples)
-    # metallic: route the source's metallic texture into an emission, bake EMIT, restore
     hm = hp.active_material
-    metal_tex = None
+    bsdf = None
     if hm and hm.use_nodes:
         bsdf = next((n for n in hm.node_tree.nodes if n.type == 'BSDF_PRINCIPLED'), None)
-        if bsdf and bsdf.inputs['Metallic'].links:
-            metal_tex = bsdf.inputs['Metallic'].links[0].from_socket
-    if metal_tex is not None:
+
+    def bake_input_as_emission(key, input_name):
+        """Route a Principled input (texture or constant) of the source into an emission and bake
+        EMIT: the raw value, unaffected by lighting or metalness. Returns False if not possible."""
+        if bsdf is None:
+            return False
         hn = hm.node_tree
         out = next(n for n in hn.nodes if n.type == 'OUTPUT_MATERIAL')
         prev = out.inputs['Surface'].links[0].from_socket
         em = hn.nodes.new('ShaderNodeEmission')
-        hn.links.new(metal_tex, em.inputs['Color'])
+        inp = bsdf.inputs[input_name]
+        if inp.links:
+            hn.links.new(inp.links[0].from_socket, em.inputs['Color'])
+        else:
+            v = inp.default_value
+            em.inputs['Color'].default_value = tuple(v) if hasattr(v, "__len__") else (v, v, v, 1.0)
         hn.links.new(em.outputs[0], out.inputs['Surface'])
         try:
-            bake("metal", 'EMIT', 4)
+            bake(key, 'EMIT', 4)
         finally:
             hn.links.new(prev, out.inputs['Surface'])
             hn.nodes.remove(em)
-    else:
+        return True
+
+    # albedo via emission: the DIFFUSE colour pass is base colour x (1 - metallic), which turns
+    # chrome/metal parts black
+    if not bake_input_as_emission("albedo", 'Base Color'):
+        bake("albedo", 'DIFFUSE', 4, pass_filter={'COLOR'})
+    bake("normal", 'NORMAL', 4, normal_space='TANGENT')
+    bake("rough", 'ROUGHNESS', 4)
+    bake("ao", 'AO', ao_samples)
+    if not (bsdf and bsdf.inputs['Metallic'].links and bake_input_as_emission("metal", 'Metallic')):
         ims["metal"].pixels.foreach_set([0.0, 0.0, 0.0, 1.0] * (res * res))
         times["metal"] = "constant 0"
     for i in ims.values():
@@ -532,6 +544,38 @@ def bake_self(obj, image, typ='DIFFUSE', samples=8, margin=16, **kw):
     if typ == 'DIFFUSE' and 'pass_filter' not in kw:
         kw['pass_filter'] = {'COLOR'}
     bpy.ops.object.bake(type=typ, use_selected_to_active=False, margin=margin, use_clear=True, **kw)
+
+
+def bleed_reference(src_path, out_path, bg=None, tol=24, iters=12):
+    """Grow the drawing's colours over the sheet background (dilation), so projected faces whose
+    edges land slightly outside the drawn outline don't pick up a light background halo.
+    bg: background RGB 0-255 (default: the bottom-left pixel). Uses numpy; returns out_path."""
+    import numpy as np
+    img = bpy.data.images.load(src_path, check_existing=False)
+    w, h = img.size
+    a = np.array(img.pixels[:], dtype=np.float32).reshape(h, w, 4)[:, :, :3]
+    bpy.data.images.remove(img)
+    ref = np.array(bg, np.float32) / 255 if bg else a[0, 0].copy()
+    known = np.abs(a - ref).sum(axis=2) > tol / 255 * 3
+    col = a * known[..., None]
+    for _ in range(iters):
+        acc = np.zeros_like(col)
+        cnt = np.zeros(known.shape, np.float32)
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                acc += np.roll(np.roll(col * known[..., None], dy, 0), dx, 1)
+                cnt += np.roll(np.roll(known.astype(np.float32), dy, 0), dx, 1)
+        grow = (~known) & (cnt > 0)
+        col[grow] = acc[grow] / cnt[grow][:, None]
+        known = known | grow
+    out = bpy.data.images.new(os.path.basename(out_path), w, h, alpha=False)
+    rgba = np.dstack([np.where(known[..., None], col, a), np.ones((h, w, 1), np.float32)])
+    out.pixels.foreach_set(rgba.astype(np.float32).ravel())
+    out.filepath_raw = out_path
+    out.file_format = 'PNG'
+    out.save()
+    bpy.data.images.remove(out)
+    return out_path
 
 
 def normal_from_albedo(albedo_img, out_name, strength=6.0):

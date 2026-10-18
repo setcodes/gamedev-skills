@@ -27,7 +27,10 @@ def load_polys(path, key):
     d = json.load(open(path))
     if "result" in d and isinstance(d["result"], dict):
         d = d["result"]
-    return d.get(key, [])
+    v = d.get(key, [])
+    while isinstance(v, dict) and key in v:   # e.g. result = {"polys": underside_uv_polys(obj)}
+        v = v[key]
+    return v
 
 
 def px(poly, w, h):

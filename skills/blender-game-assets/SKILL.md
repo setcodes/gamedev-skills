@@ -37,6 +37,7 @@ Use the user's or project's own layout when one exists; otherwise propose this d
 | Input | Workflow | Guide |
 |---|---|---|
 | Meshy prop / building / furniture / weapon | Rebuild clean low-poly from measurements, bake from the Meshy mesh | `references/hard-surface.md` |
+| Meshy vehicle (car, truck, cart) | Visible shell → cross-section cage shrinkwrapped onto it → decimate; clean tyres; add missing parts | `references/vehicles.md` |
 | Meshy character / creature | Voxel remesh → calm hair → budgeted decimation → body-part seams → bake | `references/characters.md` |
 | Character needs a skeleton | Mixamo-ready FBX → user rigs on mixamo.com → fix weights → rigged GLB | `references/mixamo.md` |
 | Only a reference image / multi-view sheet | Measure in pixels → block out → project views as texture → bake atlas | `references/from-reference.md` |
@@ -70,13 +71,15 @@ Budgets for an isometric/top-down camera (detail into textures, silhouette into 
 - glTF export with `use_selection` also exports objects selected in *other scenes*: use `use_active_scene=True` and deselect everywhere (`export_glb` does both). Object names are global across scenes — renaming to a taken name silently fails.
 - Mixamo's auto-rig often gives the chin/jaw ~50% `Neck` weight → "skewed chin" when the head tilts. Fix it before delivering (`fix_head_weights`).
 - Long operations can run in `blender -b` (synchronous, keeps the user's UI free); exchange data via `bpy.data.libraries.write` / `libraries.load`.
+- Bake albedo from the source's Base Color through an emission (`bake_maps` does): the DIFFUSE colour pass is base × (1 − metallic) and turns chrome black. Split sharp edges before selected-to-active bakes, or shared vertex normals skew the rays at hard corners.
+- Meshy panels are often thin open shells (cars): voxel remesh shreds them — cull invisible faces and shrinkwrap a clean cage instead.
 - System Python may lack numpy (the post scripts only need Pillow); Blender's Python has numpy.
 
 ## Bundled scripts
 
 - `scripts/blender_mcp_stdio.py` — stdio MCP bridge for the Blender add-on (register it in Claude Code or Codex).
 - `scripts/blender_exec.py` — run job files in the live Blender (long timeout, concatenates files).
-- `scripts/bpy_lib.py` — Blender-side helpers: file hygiene, import/stats, ray casting, block-out (`prism`, `box`, `ledge_ring`, `offset_band`), `unwrap_hard_surface`, `character_lowpoly`, `decimate_to`, `unwrap_character`, `bake_maps`, `bake_self`, `normal_from_albedo`, `underside_uv_polys`, `game_material`, `export_glb`, `export_mixamo_fbx`, review renders, rig helpers (`weight_profile`, `fix_head_weights`, `limit_weights`, `stress_pose`).
+- `scripts/bpy_lib.py` — Blender-side helpers: file hygiene, import/stats, ray casting, block-out (`prism`, `box`, `ledge_ring`, `offset_band`), `unwrap_hard_surface`, `character_lowpoly`, `decimate_to`, `unwrap_character`, `bake_maps`, `bake_self`, `bleed_reference`, `normal_from_albedo`, `underside_uv_polys`, `game_material`, `export_glb`, `export_mixamo_fbx`, review renders, rig helpers (`weight_profile`, `fix_head_weights`, `limit_weights`, `stress_pose`).
 - `scripts/maps_post.py` — Pillow post-processing: `pack-orm`, `flatten`, `fill`, `grid` (measuring references), `sheet` (comparison images).
 - `scripts/bg_verify.py` — re-import FBX/GLB in background Blender and report.
 - `scripts/verify_glb.py` — inspect a GLB (meshes, materials, skins, animations).
