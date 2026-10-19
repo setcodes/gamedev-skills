@@ -852,3 +852,70 @@ def reset_pose(arm):
         pb.rotation_quaternion = (1, 0, 0, 0)
         pb.location = (0, 0, 0)
         pb.scale = (1, 1, 1)
+
+
+# --------------------------------------------------------------------------- coplanar faces
+
+def _coplanar_groups(bm):
+    groups = {}
+    for f in bm.faces:
+        if f.calc_area() < 1e-8:
+            continue
+        n = f.normal
+        k = max(range(3), key=lambda i: abs(n[i]))
+        sgn = 1 if n[k] > 0 else -1
+        cn = n * sgn
+        groups.setdefault((round(cn.x, 2), round(cn.y, 2), round(cn.z, 2)), []).append(
+            (cn.dot(f.verts[0].co), sgn, f, cn))
+    return groups
+
+
+_BARY = [(1/3, 1/3, 1/3), (0.8, 0.1, 0.1), (0.1, 0.8, 0.1), (0.1, 0.1, 0.8),
+         (0.45, 0.45, 0.1), (0.1, 0.45, 0.45), (0.45, 0.1, 0.45)]
+
+
+def coplanar_report(bm, tol=0.003):
+    """Pairs of overlapping triangles in one plane (bm must be triangulated).
+    same_dir=True -> visible z-fighting; False -> faces glued face-to-face."""
+    from mathutils import geometry as G
+    out = []
+    for items in _coplanar_groups(bm).values():
+        items.sort(key=lambda x: x[0])
+        for i, (d1, s1, f1, cn) in enumerate(items):
+            t = cn.orthogonal().normalized(); b = cn.cross(t)
+            P = lambda v: Vector((v.dot(t), v.dot(b)))
+            v1 = [P(v.co) for v in f1.verts]
+            for d2, s2, f2, _ in items[i + 1:]:
+                if d2 - d1 > tol:
+                    break
+                v2 = [P(v.co) for v in f2.verts]
+                p1 = [v1[0] * a + v1[1] * c + v1[2] * e for a, c, e in _BARY]
+                p2 = [v2[0] * a + v2[1] * c + v2[2] * e for a, c, e in _BARY]
+                if any(G.intersect_point_tri_2d(p, *v2) for p in p1) or \
+                   any(G.intersect_point_tri_2d(p, *v1) for p in p2):
+                    out.append({"same_dir": s1 == s2, "a": f1.index, "b": f2.index,
+                                "at": [round(c, 2) for c in f1.calc_center_median()]})
+    return out
+
+
+def remove_glued(bm, tol=5e-4):
+    """Delete triangles fully covered by an opposite-facing coplanar surface (contact faces
+    between stacked trim pieces): invisible, but texturers and unwrappers still spend atlas on
+    them. bm must be triangulated. Returns the number removed."""
+    from mathutils import geometry as G
+    kill = []
+    for items in _coplanar_groups(bm).values():
+        for d1, s1, f1, cn in items:
+            t = cn.orthogonal().normalized(); b = cn.cross(t)
+            P = lambda v: Vector((v.dot(t), v.dot(b)))
+            opp = [[P(v.co) for v in f2.verts] for d2, s2, f2, _ in items
+                   if s2 != s1 and abs(d2 - d1) < tol]
+            if not opp:
+                continue
+            v = [P(x.co) for x in f1.verts]
+            pts = [v[0] * a + v[1] * c + v[2] * e for a, c, e in _BARY]
+            if all(any(G.intersect_point_tri_2d(p, *o) for o in opp) for p in pts):
+                kill.append(f1)
+    bmesh.ops.delete(bm, geom=kill, context='FACES_ONLY')
+    bmesh.ops.delete(bm, geom=[v for v in bm.verts if not v.link_faces], context='VERTS')
+    return len(kill)

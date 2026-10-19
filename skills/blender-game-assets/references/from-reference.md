@@ -42,3 +42,15 @@ Weapons and props: put the pivot where the game attaches them (grip centre for a
 - Ask for strictly orthographic, flat, shadowless lighting ("orthographic elevation, flat even lighting, no shadows, no perspective").
 - Better still: separate seamless material tiles (wall boards, roof sheets, plinth stone) + elevations only for unique elements (windows, doors). Then build tiling materials (crisp at any distance) and take only the unique details from the elevations.
 - Hybrid on existing sheets: procedural tiling materials for big surfaces coloured from the reference, projected details for windows/doors, protruding trims as geometry.
+
+## Variant: clean geometry only (the user textures it elsewhere, e.g. Meshy)
+
+When the user wants an untextured mesh for an external texturing/unwrapping tool, spend the budget on the detail a texturer needs to "see" instead of projecting: real window/door recesses (~10 cm, `EXACT` boolean of box cutters into the closed wall prism, then delete the bottom and roof-hidden faces and colour the recess backs as glass/door), U-shaped casings, two-step cornices, sills, aprons, sash crosses, corner boards, frieze, barge boards, ridge cap, porch canopy with cheeks and braces, chimney with an inset flue. A small rural house came to ~1.5k tris (one mesh, flat colour materials per zone as hints, no UV).
+
+- Build trims in a wall-local frame (u along the wall, w outward, z up) and drop the face against the wall.
+- In the MCP context `bpy.context.view_layer` may belong to another scene, so operators like `modifier_apply` fail. Apply modifiers with `bpy.data.meshes.new_from_object(obj.evaluated_get(scene.view_layers[0].depsgraph))` and render with `bpy.ops.render.render(write_still=True, scene=sc.name)`.
+- Before handing the mesh over, triangulate a joined copy and run `remove_glued(bm)` then `coplanar_report(bm)`: zero `same_dir` pairs is required (those z-fight in every viewer), and glued contact faces should be gone. Typical offenders: a threshold or sill whose face lies on the door leaf or plinth front, beam ends flush with a fascia, a ridge cap running through a chimney. The first Meshy pass on such a mesh painted all of them.
+- Don't keep the roof underside over the closed attic: split the roof extrusion at the gable walls and keep only the soffits under the overhangs. Otherwise the texturer gives the underside about 20% of the atlas.
+- Chimney on a ridge: build its body as a prism whose bottom follows both slopes (no part inside the attic), add a flashing collar, and stop the ridge cap at the collar.
+- Meshy texturing (observed): it keeps the geometry exactly and returns its own UVs at roughly uniform 180 px/m on a 4K atlas for a 7 × 8 m house. Common errors: thin trim gets the neighbouring wall colour, the flue interior is painted light, details are painted twice next to modelled ones (door handle), and shadows get baked under the chimney.
+- Workbench shadows streak through open (non-manifold) meshes. That is not a geometry bug: check normals with `show_backface_culling` and shadows off.

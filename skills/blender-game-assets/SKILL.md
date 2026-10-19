@@ -1,6 +1,6 @@
 ---
 name: blender-game-assets
-description: "Turn Meshy.ai (or other AI/photogrammetry) models, reference images and concept sheets into game-ready low-poly assets by driving a live Blender over MCP: rebuild props and buildings and bake detail into textures, reduce characters to a budget, prepare Mixamo uploads and fix Mixamo skin weights, or build a model straight from a reference sheet without Meshy; exports GLB for game engines. Use whenever the user mentions Blender, Meshy, low-poly, retopology, polycount, baking, normal maps, game-ready or optimized models, Mixamo or rigging, or asks to make a 3D asset from a picture, even if they don't name the skill."
+description: "Turn Meshy.ai (or other AI/photogrammetry) models, reference images and concept sheets into game-ready low-poly assets by driving a live Blender over MCP: rebuild props and buildings and bake detail into textures, reduce characters to a budget, prepare Mixamo uploads and fix Mixamo skin weights, or build a model straight from a reference sheet without Meshy; exports FBX or GLB for game engines. Also use for artifact cleanup and texture clarity on already optimized humans and monsters. Use whenever the user mentions Blender, Meshy, low-poly, retopology, polycount, baking, normal maps, game-ready or optimized models, Mixamo or rigging, or asks to make a 3D asset from a picture, even if they don't name the skill."
 license: MIT
 metadata:
   version: "1.0.0"
@@ -9,6 +9,14 @@ metadata:
 # Blender Game Assets
 
 Turn heavy AI-generated models into cheap, clean game assets that still look like the original. Meshy-style output looks good but is unusable in a game as-is: 0.5–1.2M triangles, keys/bricks/boards as geometry, one messy mesh. The result must hold up from the game camera (often isometric or top-down) **and** when the user inspects it up close in Blender, from low angles. Answer in the user's language; keep file names and code identifiers as they are.
+
+## Character FBX delivery and neutral previews
+
+For this user's humans/monsters, final output is FBX with its texture folder. For delivery settings or dull scene previews, read [references/preview-and-fbx.md](references/preview-and-fbx.md). Use a saved neutral studio with Khronos PBR Neutral; correct lighting/display before changing texture colors. This character preference takes precedence over the generic GLB delivery examples below (recorded 2026-10-19).
+
+## Texture-only work on optimized characters
+
+For texture artifact removal, clarity or material polish on an existing optimized human or monster, read [references/texture-cleanup.md](references/texture-cleanup.md). That mode replaces the raw-to-game reduction workflow below: use optimized versions only, preserve geometry/UV/rig, and assess before editing when requested. It records this user's character texture preferences (2026-10-19).
 
 ## 0. Connect to Blender
 
