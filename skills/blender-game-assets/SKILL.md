@@ -57,7 +57,13 @@ Budgets for an isometric/top-down camera (detail into textures, silhouette into 
 | Small prop | 50–500 | 256–512 |
 | Medium prop | 500–2 000 | 512–1024 |
 | Building | 150–8 000 | 1024–2048 |
-| Character / enemy | 8 000–15 000 | 2048 |
+| Hero / elite / boss | 8 000–15 000 | 2048 |
+| Enemy with a special mechanic (shooter, charger, caster) | 3 000–5 000 | 1024 |
+| Crowd / horde enemy, 1.5–2 m | 2 500–3 500 | 1024 |
+| Crowd / horde enemy, under 1.2 m | 1 500–2 500 | 1024 |
+| Swarm critter (bat, insect), no rig | 300–800 | 512 |
+
+**Ask the enemy's role before reducing it.** Crowd enemies are drawn 200–300 at once, so their budget is set by the whole crowd, not by how the single model looks. Measured in Godot 4 (Forward+, M-series Mac): 400 skinned 12.5k-tri enemies with shadows were GPU-bound at ~46 FPS; without shadows they ran at 60 FPS. Skinning cost scales with vertices × instances, and every shadow cascade draws the mesh again. For a crowd enemy, also: one surface/material, no finger bones (see `references/mixamo.md`), 4 weights per vertex, LOD on import, and a clip set of run / attack / hit / death (+ knockdown and get-up if the game knocks enemies down). Build new crowd monsters straight to the crowd budget. Cutting a finished 8–14k model down later costs more work and looks worse.
 
 ## 3. The loop (every workflow)
 

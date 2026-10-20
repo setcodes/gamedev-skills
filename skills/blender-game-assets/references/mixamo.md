@@ -39,6 +39,17 @@ Everything above the jaw plane (face, ears, hair) → 100% Head with a ~2 cm smo
 
 Stress test before delivering (`stress_pose`): arms forward + elbows bent, leg forward + knee bent, spine twist + head turn; look at shoulders, elbows, knees, hips, neck.
 
+### Crowd enemies: strip the fingers
+
+A full Mixamo rig has 65 bones (73 with `_End` leaves in some exports), and about half are fingers. A top-down camera never shows fingers, but every bone is a track in every clip and is updated every frame for every enemy. Measured: ~10 µs of animation per visible enemy with fingers; removing them roughly halves that. For a crowd/horde enemy (see the budget table in `SKILL.md`):
+
+1. Add each finger's vertex-group weight into its hand group (`*Hand`), then delete the finger groups.
+2. Delete the finger bones (`*Thumb*`, `*Index*`, `*Middle*`, `*Ring*`, `*Pinky*`) and `*_End` leaf bones in Edit Mode. Keep the hands, because weapons attach to them.
+3. `limit_weights(mesh, 4)` again, re-render the idle and stress poses, and check that the hands do not tear.
+4. Re-export every clip against the reduced armature. Animation tracks for missing bones must be dropped (or the engine-side loader must skip them).
+
+Heroes, elites and bosses keep the full rig.
+
 ## 5. Deliver
 
 - Replace Mixamo's material with the full game material (`game_material`), delete its orphan copies.
